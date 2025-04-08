@@ -251,14 +251,31 @@ def get_page_info() -> tuple[WebElement | None, int | None]:
     Function to get pagination element and current page number
     '''
     try:
-        pagination_element = try_find_by_classes(driver, ["jobs-search-pagination__pages", "artdeco-pagination", "artdeco-pagination__pages"])
+        pagination_element = try_find_by_classes(driver, [
+            "jobs-search-results-list__pagination",
+            "jobs-search-pagination__pages",
+            "artdeco-pagination",
+            "artdeco-pagination__pages",
+            "ember-view"
+        ])
+        
         scroll_to_view(driver, pagination_element)
-        current_page = int(pagination_element.find_element(By.XPATH, "//button[contains(@class, 'active')]").text)
+
+        # Locate the <li> element with 'active' and 'selected' classes inside pagination_element
+        active_li = pagination_element.find_element(By.XPATH, ".//li[contains(@class, 'active') and contains(@class, 'selected')]")
+
+        # Get the page number from the button or span inside <li>
+        current_page_text = active_li.find_element(By.TAG_NAME, "span").text.strip()
+        current_page = int(current_page_text)
+
+        print_lg(f"Current Page: {current_page}")
+        
     except Exception as e:
         print_lg("Failed to find Pagination element, hence couldn't scroll till end!")
         pagination_element = None
         current_page = None
         print_lg(e)
+
     return pagination_element, current_page
 
 
